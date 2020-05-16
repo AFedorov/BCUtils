@@ -1,0 +1,23 @@
+{
+  "name": "bcutils",
+  "version": "1.0.0",
+  "description": "Utility for Banking Card",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Aleksey Fedorov",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^13.9.8",
+    "clean-webpack-plugin": "^3.0.0",
+    "typescript": "^3.8.3",
+    "webpack": "^4.42.1",
+    "webpack-cli": "^3.3.11"
+  },
+  "dependencies": {
+    "exceljs": "^3.8.2",
+    "iconv-lite": "^0.5.1",
+    "xlsx": "^0.15.6"
+  }
+}
