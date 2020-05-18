@@ -7,6 +7,7 @@ let data = ''
 
 let fileName = process.argv[2]
 
+
 const readStream = fs.createReadStream(fileName)
     .pipe(iconv.decodeStream('win1251'))
 
@@ -21,20 +22,42 @@ const processFile = (content: string) => {
     const lines: string[] = content.split(/\r?\n/);
     const linesLen = lines.length;
 
-    // let totalLen = 0;
+    // lines.forEach((value, index) => {
+    //     if (index === 350) {
+    //         console.log(value)
+    //         console.log(lines[350])
+    //     }
+    // });
+
+
+    let totalLen = 0
+    let ACC_CardProductMap = new Map()
+
     for (let i = 0; i < linesLen; i++) {
     //     countLine++
-    //     const lineNumber = i + 1;
-    //     const line = lines[i];
+    // //     const lineNumber = i + 1;
+    // //     const line = lines[i];
         if (lines[i] === '   <Row>') {
-            console.log(lines[i + 1])
-            console.log(lines[i + 15])
+            //Если пустое
+            if (lines[i + 15].substring(1, 57) === '   <Cell><Data ss:Type=\"String\">          </Data></Cell>') {
+                ACC_CardProductMap.set(lines[i + 3].substring(33, 49), getDataFromString(lines[i + 4]))
+                // console.log(lines[i + 3].substring(33, 49))
+                // console.log(getDataFromString(lines[i + 4])) //реализовать метод getDataFromString
+            }
+            // console.log(lines[i + 15])
+            // console.log(lines[i + 15])
             // console.log(countLine)
         }
     }
+    console.log(ACC_CardProductMap.get('5258335591011265'))
 }
 
-
+const getDataFromString = (str: string): string => {
+    const dataPosIndex = str.indexOf('<Data')
+    const aIndex = str.substring(dataPosIndex).indexOf('>') + 1
+    const bIndex = str.indexOf('<\/Data>')
+    return str.substring(aIndex, bIndex).trim()
+}
 
 // ----- read file with stream -----
 // const readable = fs.createReadStream(fileName)
