@@ -3,21 +3,38 @@ import * as readline from 'readline'
 import * as iconv from 'iconv-lite'
 
 let data = ''
-// let countLine: number = 0
 
-let fileName = process.argv[2]
+interface srcDataDetails {
+    cardProduct: string
+    branchCode: string
+}
+// type ACC_CardProductMap = new Map<string, srcDataDetails>
+const ACC_CardProductMap = new Map<string, srcDataDetails>()
 
+// let ACC_CardProductMap = new Map()
 
-const readStream = fs.createReadStream(fileName)
+let fileNameSrc = process.argv[2]
+const readStreamSrc = fs.createReadStream(fileNameSrc)
     .pipe(iconv.decodeStream('win1251'))
 
-readStream.on('data', function (chunk) {
+let fileNameDst = process.argv[3]
+const readStreamDst = fs.createReadStream(fileNameSrc)
+    .pipe(iconv.decodeStream('win1251'))
+
+readStreamSrc.on('data', function (chunk) {
     data += chunk
 }).on('end', function () {
-    processFile(data)
+    processFileSrc(data)
 })
 
-const processFile = (content: string) => {
+readStreamDst.on('data', function (chunk) {
+    data += chunk
+}).on('end', function () {
+    processFileDst(data)
+})
+
+
+const processFileSrc = (content: string) => {
 
     const lines: string[] = content.split(/\r?\n/);
     const linesLen = lines.length;
@@ -30,31 +47,39 @@ const processFile = (content: string) => {
     // });
 
 
-    let totalLen = 0
-    let ACC_CardProductMap = new Map()
+    // let totalLen = 0
+
 
     for (let i = 0; i < linesLen; i++) {
-    //     countLine++
-    // //     const lineNumber = i + 1;
-    // //     const line = lines[i];
         if (lines[i] === '   <Row>') {
-            //Если пустое
+
             if (lines[i + 15].substring(1, 57) === '   <Cell><Data ss:Type=\"String\">          </Data></Cell>') {
-                ACC_CardProductMap.set(lines[i + 3].substring(33, 49), getDataFromString(lines[i + 4]))
-                // console.log(lines[i + 3].substring(33, 49))
-                // console.log(getDataFromString(lines[i + 4])) //реализовать метод getDataFromString
+                // let rec: srcDataDetails = {cardProduct: getDataFromString(lines[i + 3]), branchCode: getDataFromString(lines[i + 3])}
+                ACC_CardProductMap.set(getDataFromString(lines[i + 3]),{cardProduct: getDataFromString(lines[i + 4]), branchCode: getDataFromString(lines[i + 5])})
             }
-            // console.log(lines[i + 15])
-            // console.log(lines[i + 15])
-            // console.log(countLine)
         }
     }
-    console.log(ACC_CardProductMap.get('5258335591011265'))
+    console.log(ACC_CardProductMap.get('4249742300012929'))
+}
+
+const processFileDst = (content: string) => {
+    const lines: string[] = content.split(/\r?\n/);
+    const linesLen = lines.length;
+
+    for (let i = 0; i < linesLen; i++) {
+        if (lines[i] === '   <Row>') {
+            // console.log(ACC_CardProductMap.get('4249753593903005'))
+            if (ACC_CardProductMap.get(getDataFromString(lines[i + 3])) !== undefined)
+            console.log(getDataFromString(lines[i + 3]) + ' = ' + ACC_CardProductMap.get(getDataFromString(lines[i + 3])).cardProduct + ' = ' + ACC_CardProductMap.get(getDataFromString(lines[i + 3])).branchCode)
+        }
+    }
+
+    // console.log(ACC_CardProductMap.get('5258335591011265'))
 }
 
 const getDataFromString = (str: string): string => {
     const dataPosIndex = str.indexOf('<Data')
-    const aIndex = str.substring(dataPosIndex).indexOf('>') + 1
+    const aIndex = str.substring(dataPosIndex).indexOf('>') + dataPosIndex + 1
     const bIndex = str.indexOf('<\/Data>')
     return str.substring(aIndex, bIndex).trim()
 }
@@ -97,16 +122,16 @@ const getDataFromString = (str: string): string => {
 //         }
 //     }
 
-    // for (const line of lines) {
-    //     if (line === '   <Row>') {
-    //         for (let i = 0; i < 15; i++) {
-    //             countLine++
-    //         }
-    //     }
-    //     if (line === '   </Row>') console.log('Row end')
-    // }
-    // //}
-    // console.log(countLine)
+// for (const line of lines) {
+//     if (line === '   <Row>') {
+//         for (let i = 0; i < 15; i++) {
+//             countLine++
+//         }
+//     }
+//     if (line === '   </Row>') console.log('Row end')
+// }
+// //}
+// console.log(countLine)
 // }
 
 // const lines = sourceCode.getLines();
