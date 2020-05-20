@@ -1,5 +1,5 @@
 import * as fs from "fs"
-import * as readline from 'readline'
+// import * as readline from 'readline'
 import * as iconv from 'iconv-lite'
 
 let data = ''
@@ -8,17 +8,16 @@ interface srcDataDetails {
     cardProduct: string
     branchCode: string
 }
+
 // type ACC_CardProductMap = new Map<string, srcDataDetails>
 const ACC_CardProductMap = new Map<string, srcDataDetails>()
-
-// let ACC_CardProductMap = new Map()
 
 let fileNameSrc = process.argv[2]
 const readStreamSrc = fs.createReadStream(fileNameSrc)
     .pipe(iconv.decodeStream('win1251'))
 
 let fileNameDst = process.argv[3]
-const readStreamDst = fs.createReadStream(fileNameSrc)
+const readStreamDst = fs.createReadStream(fileNameDst)
     .pipe(iconv.decodeStream('win1251'))
 
 readStreamSrc.on('data', function (chunk) {
@@ -27,53 +26,47 @@ readStreamSrc.on('data', function (chunk) {
     processFileSrc(data)
 })
 
-readStreamDst.on('data', function (chunk) {
-    data += chunk
-}).on('end', function () {
-    processFileDst(data)
-})
+// console.log(ACC_CardProductMap);
+
+// readStreamDst.on('data', function (chunk) {
+//     data += chunk
+// }).on('end', function () {
+//     processFileDst(data)
+// })
 
 
 const processFileSrc = (content: string) => {
-
     const lines: string[] = content.split(/\r?\n/);
-    const linesLen = lines.length;
 
-    // lines.forEach((value, index) => {
-    //     if (index === 350) {
-    //         console.log(value)
-    //         console.log(lines[350])
-    //     }
-    // });
-
-
-    // let totalLen = 0
-
-
-    for (let i = 0; i < linesLen; i++) {
+    for (let i = 0; i < lines.length; i++) {
         if (lines[i] === '   <Row>') {
-
             if (lines[i + 15].substring(1, 57) === '   <Cell><Data ss:Type=\"String\">          </Data></Cell>') {
-                // let rec: srcDataDetails = {cardProduct: getDataFromString(lines[i + 3]), branchCode: getDataFromString(lines[i + 3])}
-                ACC_CardProductMap.set(getDataFromString(lines[i + 3]),{cardProduct: getDataFromString(lines[i + 4]), branchCode: getDataFromString(lines[i + 5])})
+                ACC_CardProductMap.set(getDataFromString(lines[i + 3]), {
+                    cardProduct: getDataFromString(lines[i + 4]),
+                    branchCode: getDataFromString(lines[i + 5])
+                })
             }
         }
     }
-    console.log(ACC_CardProductMap.get('4249742300012929'))
+
+    readStreamDst.on('data', function (chunk) {
+        data += chunk
+    }).on('end', function () {
+        processFileDst(data)
+    })
+
+    // console.log(ACC_CardProductMap);
 }
 
 const processFileDst = (content: string) => {
     const lines: string[] = content.split(/\r?\n/);
-    const linesLen = lines.length;
 
-    for (let i = 0; i < linesLen; i++) {
+    for (let i = 0; i < lines.length; i++) {
         if (lines[i] === '   <Row>') {
-            // console.log(ACC_CardProductMap.get('4249753593903005'))
-            if (ACC_CardProductMap.get(getDataFromString(lines[i + 3])) !== undefined)
-            console.log(getDataFromString(lines[i + 3]) + ' = ' + ACC_CardProductMap.get(getDataFromString(lines[i + 3])).cardProduct + ' = ' + ACC_CardProductMap.get(getDataFromString(lines[i + 3])).branchCode)
+            if (ACC_CardProductMap.has(getDataFromString(lines[i + 3])))
+                console.log(getDataFromString(lines[i + 3]) + ' = ' + ACC_CardProductMap.get(getDataFromString(lines[i + 3]))?.cardProduct + ' = ' + ACC_CardProductMap.get(getDataFromString(lines[i + 3]))?.branchCode)
         }
     }
-
     // console.log(ACC_CardProductMap.get('5258335591011265'))
 }
 
@@ -83,6 +76,10 @@ const getDataFromString = (str: string): string => {
     const bIndex = str.indexOf('<\/Data>')
     return str.substring(aIndex, bIndex).trim()
 }
+
+// write(message: string) {
+//     console.log(message);
+// }
 
 // ----- read file with stream -----
 // const readable = fs.createReadStream(fileName)
